@@ -65,3 +65,37 @@ curl --location 'localhost/api/v1/convert' \
 ```sh
 cat ./postman_collection.json
 ```
+
+## SQL Solution
+
+## SQL Query
+```sql
+SELECT h.name,
+       h.author,
+       GROUP_CONCAT(h.book_name) AS books
+FROM
+    (
+        SELECT CONCAT_WS(' ', u.first_name, u.last_name) AS name,
+               TIMESTAMPDIFF(YEAR, u.birthday, CURDATE()) AS age,
+               FLOOR(DATEDIFF(ub.return_date, ub.get_date) / 7) AS week_diff,
+               b.name AS book_name,
+               b.author,
+               ub.get_date,
+               ub.return_date
+        FROM users u
+                 LEFT JOIN user_books ub
+                           ON u.id = ub.user_id
+                 LEFT JOIN books b
+                           ON ub.book_id = b.id
+    ) h
+WHERE h.age
+    BETWEEN 7 AND 17
+  AND h.week_diff <= 2
+GROUP BY h.name,
+         h.author
+HAVING COUNT(h.author) = 2
+```
+## Tables with data
+```sh
+cd ./currency-exchange/sql
+```
